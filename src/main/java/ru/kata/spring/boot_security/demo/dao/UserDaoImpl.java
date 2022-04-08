@@ -39,17 +39,22 @@ public class UserDaoImpl implements UserDao {
     @Override
     public void delete(Long id) {
         User user = getUser(id);
+        user.setRoles(null);
         entityManager.remove(user);
     }
 
     @Override
     public User getByLogin(String login) {
         TypedQuery<User> query = entityManager.createQuery(
-                "SELECT u FROM User u WHERE u.username = :login", User.class);
+                "SELECT u FROM User u WHERE u.email = :login", User.class);
         User user = query.setParameter("login", login).getSingleResult();
         user.getAuthorities().size();
         return user;
     }
 
+    @Override
+    public List<Role> getRoles() {
+        return entityManager.createQuery("select r from Role r", Role.class).getResultList();
+    }
 
 }

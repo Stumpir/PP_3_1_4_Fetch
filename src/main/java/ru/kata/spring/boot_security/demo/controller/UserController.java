@@ -10,6 +10,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -21,7 +22,10 @@ public class UserController {
     @GetMapping("/admin")
     public String getUsers(Model model) {
         List<User> list = userService.listUsers();
+        User auth =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         model.addAttribute("list", list);
+        model.addAttribute("admin", auth);
+        model.addAttribute("user", new User());
         return "users/show";
     }
 
@@ -45,7 +49,17 @@ public class UserController {
     }
 
     @PostMapping("/admin")
-    public String create(@ModelAttribute("user") User user) {
+    public String create(@ModelAttribute("user") User user, @RequestParam("roles") String[] roles) {
+        List<Role> list = new ArrayList<>();
+        List<Role> rolesDB = userService.getRoles();
+        for (String input : roles) {
+            for (Role role : rolesDB) {
+                if (role.getAuthority().equals(input)) {
+                    list.add(role);
+                }
+            }
+        }
+        user.setRoles(list);
         userService.add(user);
         return "redirect:/admin";
     }
@@ -57,7 +71,20 @@ public class UserController {
     }
 
     @PatchMapping("/admin/{id}")
-    public String update(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
+    public String update(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam("password1") String passwordIn, @RequestParam("roles") String[] roles) {
+        if (user.getPassword().equals("")) {
+            user.setPassword(passwordIn);
+        }
+        List<Role> list = new ArrayList<>();
+        List<Role> rolesDB = userService.getRoles();
+        for (String input : roles) {
+            for (Role role : rolesDB) {
+                if (role.getAuthority().equals(input)) {
+                    list.add(role);
+                }
+            }
+        }
+        user.setRoles(list);
         userService.update(id, user);
         return "redirect:/admin";
     }

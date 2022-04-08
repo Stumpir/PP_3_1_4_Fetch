@@ -25,6 +25,9 @@ public class User implements UserDetails {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "age")
+    private Integer age;
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -80,6 +83,14 @@ public class User implements UserDetails {
 
     public List<Role> getRoles() {
         return roles;
+    }
+
+    public String getRolesToString() {
+        String s = new String();
+        for (Role role : roles) {
+            s = s.concat(role.getAuthority().substring(role.getAuthority().indexOf("_") + 1) + " ");
+        }
+        return s;
     }
 
     public void setRoles(List<Role> roles) {
@@ -138,5 +149,13 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 }
